@@ -1,8 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { ActivityIndicator } from 'react-native';
+import React, { useCallback, useState, useEffect } from 'react';
+import { ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import axios from 'axios';
 
 import api from '../../services/api';
+import {
+  PokemonData,
+  PokemonType,
+  PokemonAbility,
+  PokemonMoves,
+  PokemonSpecies,
+  PokemonEvolution,
+} from '../../utils/types';
 
 import {
   PokemonDetail,
@@ -11,12 +20,9 @@ import {
   ImageViewPokemon,
   InfoPokemon,
   InfoPokemonText,
-  SkillsPokemon,
-  SkillsPokemonTitle,
-  SkillsPokemonText,
-  MovesPokemon,
-  MovesPokemonTitle,
-  MovesPokemonText,
+  DataPokemon,
+  DataPokemonTitle,
+  DataPokemonText,
 } from './styles';
 
 type PokemonParam = {
@@ -25,42 +31,67 @@ type PokemonParam = {
   };
 };
 
-interface Pokemon {
-  base_experience: string;
-  name: string;
-  height: number;
-  weight: number;
-  sprites: { front_default: string };
-  abilities: [{ ability: { name: string } }];
-  moves: [
-    {
-      move: { name: string };
-    },
-  ];
-}
-
 const Pokemon: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
-  const [pokemon, setPokemon] = useState<Pokemon>({} as Pokemon);
+  const [pokemon, setPokemon] = useState<PokemonData>({} as PokemonData);
+  const [specie, setSpecie] = useState<PokemonSpecies>({} as PokemonSpecies);
+  const [chainEvolutions, setChainEvolutions] = useState<PokemonEvolution[]>([]);
 
   const navigation = useNavigation();
   const route = useRoute<RouteProp<PokemonParam, 'Params'>>();
 
+  const verifyEvolution = useCallback((pokemonData: PokemonData, evolutions: any) => {
+    const data = [];
+    if (evolutions.species.name !== pokemonData.name) {
+      const url = evolutions.species.url;
+      const id = url.split('/pokemon-species/')[1].split('/')[0];
+      data.push({ id, name: evolutions.species.name });
+    }
+    if (
+      evolutions.evolves_to.length !== 0 &&
+      evolutions.evolves_to[0].species.name !== pokemonData.name
+    ) {
+      const url = evolutions.evolves_to[0].species.url;
+      const id = url.split('/pokemon-species/')[1].split('/')[0];
+      data.push({ id, name: evolutions.evolves_to[0].species.name });
+    }
+    if (
+      evolutions.evolves_to.length !== 0 &&
+      evolutions.evolves_to[0].evolves_to.length !== 0 &&
+      evolutions.evolves_to[0].evolves_to[0].species.name !== pokemonData.name
+    ) {
+      const url = evolutions.evolves_to[0].evolves_to[0].species.url;
+      const id = url.split('/pokemon-species/')[1].split('/')[0];
+      data.push({ id, name: evolutions.evolves_to[0].evolves_to[0].species.name });
+    }
+    setChainEvolutions(data);
+  }, []);
+
   useEffect(() => {
     async function searchPokemon() {
       setLoading(true);
-      const { data } = await api.get(`/pokemon/${route.params.id}`);
-      setPokemon(data);
+      const responses = await axios.all([
+        api.get(`/pokemon/${route.params.id}`),
+        api.get(`/pokemon-species/${route.params.id}`),
+      ]);
+      const evolutions = await axios.get(responses[1].data.evolution_chain.url);
+      setPokemon(responses[0].data);
+      setSpecie(responses[1].data);
+      verifyEvolution(responses[0].data, evolutions.data.chain);
       setLoading(false);
     }
     searchPokemon();
-  }, [route]);
+  }, [route, verifyEvolution]);
 
   useEffect(() => {
     if (pokemon.name) {
       navigation.setOptions({ headerTitle: pokemon.name });
     }
   }, [navigation, pokemon]);
+
+  const selectPokemon = (id: string) => {
+    navigation.navigate('Pokemon', { id });
+  };
 
   if (loading) {
     return (
@@ -79,18 +110,38 @@ const Pokemon: React.FC = () => {
         <InfoPokemonText>ALTURA: {pokemon.height * 10} cm</InfoPokemonText>
         <InfoPokemonText>PESO: {pokemon.weight / 10} Kg</InfoPokemonText>
       </InfoPokemon>
-      <SkillsPokemon>
-        <SkillsPokemonTitle>Habilidades:</SkillsPokemonTitle>
-        {pokemon.abilities.map((data: any, index: number) => (
-          <SkillsPokemonText key={index}>{data.ability.name}</SkillsPokemonText>
+      <InfoPokemon>
+        <InfoPokemonText>TAXA DE CAPTURA: {specie.capture_rate}</InfoPokemonText>
+        <InfoPokemonText>LENDÁRIO: {specie.is_legendary ? 'Sim' : 'Não'}</InfoPokemonText>
+      </InfoPokemon>
+      <DataPokemon>
+        <DataPokemonTitle>Tipo:</DataPokemonTitle>
+        {pokemon.types.map((data: PokemonType, index: number) => (
+          <DataPokemonText key={index}>{data.type.name}</DataPokemonText>
         ))}
-      </SkillsPokemon>
-      <MovesPokemon>
-        <MovesPokemonTitle>Movimentos:</MovesPokemonTitle>
-        {pokemon.moves.map((data: any, index: number) => (
-          <MovesPokemonText key={index}>{data.move.name}</MovesPokemonText>
+      </DataPokemon>
+      {chainEvolutions.length !== 0 && (
+        <DataPokemon>
+          <DataPokemonTitle>Evolução:</DataPokemonTitle>
+          {chainEvolutions.map((data: PokemonEvolution, index: number) => (
+            <TouchableOpacity key={index} onPress={() => selectPokemon(data.id)}>
+              <DataPokemonText>{data.name}</DataPokemonText>
+            </TouchableOpacity>
+          ))}
+        </DataPokemon>
+      )}
+      <DataPokemon>
+        <DataPokemonTitle>Habilidades:</DataPokemonTitle>
+        {pokemon.abilities.map((data: PokemonAbility, index: number) => (
+          <DataPokemonText key={index}>{data.ability.name}</DataPokemonText>
         ))}
-      </MovesPokemon>
+      </DataPokemon>
+      <DataPokemon>
+        <DataPokemonTitle>Movimentos:</DataPokemonTitle>
+        {pokemon.moves.map((data: PokemonMoves, index: number) => (
+          <DataPokemonText key={index}>{data.move.name}</DataPokemonText>
+        ))}
+      </DataPokemon>
     </PokemonDetail>
   );
 };

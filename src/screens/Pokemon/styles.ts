@@ -33,35 +33,19 @@ export const InfoPokemonText = styled.Text`
   font-weight: bold;
 `;
 
-export const SkillsPokemon = styled.View`
-  margin-top: 10px;
-  margin-left: 10px;
-`;
-
-export const SkillsPokemonTitle = styled.Text`
-  font-size: 18px;
-  text-transform: uppercase;
-  font-weight: bold;
-`;
-
-export const SkillsPokemonText = styled.Text`
-  font-size: 15px;
-  margin-top: 15px;
-`;
-
-export const MovesPokemon = styled.View`
+export const DataPokemon = styled.View`
   margin-top: 10px;
   margin-left: 10px;
   margin-bottom: 10px;
 `;
 
-export const MovesPokemonTitle = styled.Text`
+export const DataPokemonTitle = styled.Text`
   font-size: 18px;
   text-transform: uppercase;
   font-weight: bold;
 `;
 
-export const MovesPokemonText = styled.Text`
+export const DataPokemonText = styled.Text`
   font-size: 15px;
   margin-top: 15px;
 `;
