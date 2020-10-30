@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { ActivityIndicator, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import axios from 'axios';
 
@@ -69,16 +69,20 @@ const Pokemon: React.FC = () => {
 
   useEffect(() => {
     async function searchPokemon() {
-      setLoading(true);
-      const responses = await axios.all([
-        api.get(`/pokemon/${route.params.id}`),
-        api.get(`/pokemon-species/${route.params.id}`),
-      ]);
-      const evolutions = await axios.get(responses[1].data.evolution_chain.url);
-      setPokemon(responses[0].data);
-      setSpecie(responses[1].data);
-      verifyEvolution(responses[0].data, evolutions.data.chain);
-      setLoading(false);
+      try {
+        setLoading(true);
+        const responses = await axios.all([
+          api.get(`/pokemon/${route.params.id}`),
+          api.get(`/pokemon-species/${route.params.id}`),
+        ]);
+        const evolutions = await axios.get(responses[1].data.evolution_chain.url);
+        setPokemon(responses[0].data);
+        setSpecie(responses[1].data);
+        verifyEvolution(responses[0].data, evolutions.data.chain);
+        setLoading(false);
+      } catch (error) {
+        Alert.alert('Aviso', 'Ocorreu um problema, tente novamente mais tarde', [{ text: 'OK' }]);
+      }
     }
     searchPokemon();
   }, [route, verifyEvolution]);

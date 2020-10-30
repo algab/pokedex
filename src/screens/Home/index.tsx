@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { ActivityIndicator, FlatList } from 'react-native';
+import { ActivityIndicator, Alert, FlatList } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 
 import api from '../../services/api';
 
 import ListPokemons from './List';
 
-import { LoadingView, List, LoadingScroll } from './styles';
+import { ListSkeleton, List, LoadingScroll } from './styles';
 
 const Home: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
@@ -17,10 +18,14 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     async function listPokemons() {
-      setLoading(true);
-      const { data } = await api.get('/pokemon?offset=0&limit=20');
-      setPokemons(data.results);
-      setLoading(false);
+      try {
+        setLoading(true);
+        const { data } = await api.get('/pokemon?offset=0&limit=20');
+        setPokemons(data.results);
+        setLoading(false);
+      } catch (error) {
+        Alert.alert('Aviso', 'Ocorreu um problema, tente novamente mais tarde', [{ text: 'OK' }]);
+      }
     }
     listPokemons();
   }, []);
@@ -47,9 +52,22 @@ const Home: React.FC = () => {
 
   if (loading) {
     return (
-      <LoadingView>
-        <ActivityIndicator color="blue" size="large" />
-      </LoadingView>
+      <ListSkeleton>
+        {Array.from({ length: 10 }).map((_, index: number) => (
+          <SkeletonPlaceholder key={index}>
+            <SkeletonPlaceholder.Item flexDirection="row" alignItems="center">
+              <SkeletonPlaceholder.Item
+                width={80}
+                height={80}
+                borderRadius={40}
+                marginLeft={10}
+                marginTop={10}
+              />
+              <SkeletonPlaceholder.Item width={150} height={20} marginLeft={20} />
+            </SkeletonPlaceholder.Item>
+          </SkeletonPlaceholder>
+        ))}
+      </ListSkeleton>
     );
   }
   return (
