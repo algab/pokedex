@@ -4,7 +4,7 @@ PokéDex desenvolvido usando o React Native.
 
 ## Projeto
 
-Aplicativo desenvolvido com React Native que consome a [PokéAPI](https://pokeapi.co/);
+Aplicativo desenvolvido com React Native que consome a [PokéAPI](https://pokeapi.co/).
 
 **Android**
 

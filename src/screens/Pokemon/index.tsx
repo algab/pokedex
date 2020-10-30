@@ -81,7 +81,7 @@ const Pokemon: React.FC = () => {
         verifyEvolution(responses[0].data, evolutions.data.chain);
         setLoading(false);
       } catch (error) {
-        Alert.alert('Aviso', 'Ocorreu um problema, tente novamente mais tarde', [{ text: 'OK' }]);
+        Alert.alert('Aviso', 'Ocorreu um problema, tente novamente mais tarde.', [{ text: 'OK' }]);
       }
     }
     searchPokemon();

@@ -24,7 +24,7 @@ const Home: React.FC = () => {
         setPokemons(data.results);
         setLoading(false);
       } catch (error) {
-        Alert.alert('Aviso', 'Ocorreu um problema, tente novamente mais tarde', [{ text: 'OK' }]);
+        Alert.alert('Aviso', 'Ocorreu um problema, tente novamente mais tarde.', [{ text: 'OK' }]);
       }
     }
     listPokemons();
