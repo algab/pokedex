@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { ButtonPokemon, TextPokemon, ImagePokemon } from './styles';
+import { ButtonPokemon, TextPokemon, ImagePokemon, Separator } from './styles';
 
 interface Props {
   item: any;
@@ -10,15 +10,18 @@ interface Props {
 
 const ListPokemons: React.FC<Props> = ({ item, index, selectPokemon }) => {
   return (
-    <ButtonPokemon key={index} onPress={() => selectPokemon(index)}>
-      <ImagePokemon
-        source={{
-          uri: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${index + 1}.png`,
-        }}
-      />
-      <TextPokemon>{item.name}</TextPokemon>
-    </ButtonPokemon>
+    <>
+      <ButtonPokemon key={index} onPress={() => selectPokemon(index)}>
+        <ImagePokemon
+          source={{
+            uri: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${index + 1}.png`,
+          }}
+        />
+        <TextPokemon>{item.name}</TextPokemon>
+      </ButtonPokemon>
+      <Separator />
+    </>
   );
 };
 
-export default ListPokemons;
+export default React.memo(ListPokemons);

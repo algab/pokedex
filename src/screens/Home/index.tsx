@@ -38,10 +38,10 @@ const Home: React.FC = () => {
   };
 
   const loadPokemons = async () => {
-    setPage(page + 1);
     const offset = 20 * (page + 1) - 20;
     const { data } = await api.get(`/pokemon?offset=${offset}&limit=20`);
     const result = pokemons.concat(data.results);
+    setPage(page + 1);
     setPokemons(result);
   };
 
@@ -60,12 +60,9 @@ const Home: React.FC = () => {
         onEndReached={loadPokemons}
         onEndReachedThreshold={0.1}
         ListFooterComponent={infiniteScroll}
+        initialNumToRender={20}
         renderItem={({ item, index }: any) => (
-          <ListPokemons
-            item={item}
-            index={index}
-            selectPokemon={selectPokemon}
-          />
+          <ListPokemons item={item} index={index} selectPokemon={selectPokemon} />
         )}
       />
     </List>
